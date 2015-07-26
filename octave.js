@@ -1,4 +1,4 @@
-var path=process.cwd();
+var path=process.cwd()+"\\Octave\\Octave-3.8.2\\bin\\octave.exe";
 function funcbody(fun)
 {
 	fun=fun+"";
@@ -60,9 +60,10 @@ function matlablib()
 
 function octave(fun,callback,args)
 {
+	var opath=require('path').join(path,"..");
 	if (!args) args=[];
-	fun=funcbody(matlablib)+"\ncd '"+path+"'\n"+funcbody(fun);
-	//console.log(fun);	
+	fun=funcbody(matlablib)+"\ncd '"+opath+"'\n"+funcbody(fun);
+	console.log("fun"+fun);	
 	var spawn = require("child_process").spawn;
 	var process = spawn(octave.exepath,["--silent","--eval", fun]);
 	var msg="";
