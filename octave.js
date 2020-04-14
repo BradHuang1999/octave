@@ -1,15 +1,15 @@
-var path=process.cwd()+"\\Octave\\Octave-3.8.2\\bin\\octave.exe";
-function funcbody(fun)
-{
-	fun=fun+"";
-	var st,ed;
-	st=fun.indexOf("{/*");if (st>=0) st+=3;if (st<0) st=fun.indexOf("{")+1;
-	ed=fun.indexOf("*/}");if (ed>=0) ed-=2;if (ed<0) ed=fun.indexOf("}");
-	fun=fun.substring(st,ed);
+var path = process.cwd() + "\\Octave\\Octave-3.8.2\\bin\\octave.exe";
+
+function funcbody(fun) {
+	fun = fun + "";
+	var st, ed;
+	st = fun.indexOf("{/*"); if (st >= 0) st += 3; if (st < 0) st = fun.indexOf("{") + 1;
+	ed = fun.indexOf("*/}"); if (ed >= 0) ed -= 2; if (ed < 0) ed = fun.indexOf("}");
+	fun = fun.substring(st, ed);
 	return fun;
 }
-function matlablib()
-{/*
+
+function matlablib() {/*
 	function res=getnext()
 		cccc=fgetl(stdin);
 		if cccc==-1
@@ -58,59 +58,54 @@ function matlablib()
 	end
 */}
 
-function octave(fun,callback,args)
-{
-	var opath=require('path').join(path,"..");
-	if (!args) args=[];
-	fun=funcbody(matlablib)+"\ncd '"+opath+"'\n"+funcbody(fun);
-	console.log("fun"+fun);	
+function octave(fun, callback, args) {
+	var opath = require('path').join(path, "..");
+	if (!args) args = [];
+	fun = funcbody(matlablib) + "\ncd '" + opath + "'\n" + funcbody(fun);
+	console.log("fun" + fun);
 	var spawn = require("child_process").spawn;
-	var process = spawn(octave.exepath,["--silent","--eval", fun]);
-	var msg="";
-	process.stdout.on('data', function (data){	
+	var process = spawn(octave.exepath, ["--silent", "--eval", fun]);
+	var msg = "";
+	process.stdout.on('data', function (data) {
 		//console.log("data:",data+"");
-		msg+=data+"";
+		msg += data + "";
 	});
-	args.forEach(function(tuple){
-		console.log("tuple instanceof Array",tuple,tuple instanceof Array,tuple.prototype);
-		if (tuple instanceof Array || (tuple.forEach))
-		{
-			if (tuple[0] instanceof Array || (tuple[0].forEach)  )
-			{
-				process.stdin.write(tuple.length+" "+tuple[0].length+"\n");
-				for(var j=0;j<tuple[0].length;j++)
-				for(var i=0;i<tuple   .length;i++)
-				{
-					process.stdin.write(" "+tuple[i][j]);
-				}
+	args.forEach(function (tuple) {
+		console.log("tuple instanceof Array", tuple, tuple instanceof Array, tuple.prototype);
+		if (tuple instanceof Array || (tuple.forEach)) {
+			if (tuple[0] instanceof Array || (tuple[0].forEach)) {
+				process.stdin.write(tuple.length + " " + tuple[0].length + "\n");
+				for (var j = 0; j < tuple[0].length; j++)
+					for (var i = 0; i < tuple.length; i++) {
+						process.stdin.write(" " + tuple[i][j]);
+					}
 				process.stdin.write("\n");
 			}
 			else
-				throw "KNOWN TYPE "+typeof tuple[0];
-		}else
-		if (typeof tuple =="number")
-		{
-			process.stdin.write("1 1\n"+tuple+"\n");
-		}else
-			throw "KNOWN TYPE "+typeof tuple+"  "+JSON.stringify(tuple);
+				throw "KNOWN TYPE " + typeof tuple[0];
+		} else
+			if (typeof tuple == "number") {
+				process.stdin.write("1 1\n" + tuple + "\n");
+			} else
+				throw "KNOWN TYPE " + typeof tuple + "  " + JSON.stringify(tuple);
 	});
 	process.stdin.end();
-	process.stdout.on('end', function (){
+	process.stdout.on('end', function () {
 		console.log(msg);
-		msg="{"+msg.substr(1)+"}";
-		msg=JSON.parse(msg);
+		msg = "{" + msg.substr(1) + "}";
+		msg = JSON.parse(msg);
 		if (callback) return callback(msg);
 	});
-	process.stderr.on('data', function (data){	
-		console.log("Octave stderr: ",data+"");
-	});	
+	process.stderr.on('data', function (data) {
+		console.log("Octave stderr: ", data + "");
+	});
 }
-if (typeof module!="undefined")
-module.exports=function(path)
-{
-	if (!path) path="octave.exe";
-	var fun=octave;
-	fun.exepath=path;
-	return fun;
-	
-}
+
+if (typeof module != "undefined")
+	module.exports = function (path) {
+		if (!path) path = "octave.exe";
+		var fun = octave;
+		fun.exepath = path;
+		return fun;
+
+	}
